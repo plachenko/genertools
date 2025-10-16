@@ -1,2 +1,26 @@
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://svelte.dev/docs/kit">svelte.dev/docs/kit</a> to read the documentation</p>
+<script lang="ts">
+  import { onMount } from "svelte";
+  import ProjectDrawer from "$lib/components/OpenAI/Project/Drawer.svelte";
+  import ProjectView from "$lib/components/ProjectView.svelte";
+
+  onMount(() => {});
+
+  let apps = $state([]);
+
+  let curApp = $state(null);
+
+  function setCurApp(_idx) {
+    console.log(_idx);
+    curApp = _idx;
+  }
+</script>
+
+<!-- Project Drawer -->
+
+{#if curApp == null}
+  <div class="w-full h-full border-r-2">
+    <ProjectDrawer {setCurApp} />
+  </div>
+{:else}
+  <ProjectView />
+{/if}

@@ -28,6 +28,8 @@
 		"lightningcss.android-arm64.node": "^1.29.3-1"
 	},
 	"dependencies": {
-    	"gh-pages": "^6.3.0"
+		"gh-pages": "^6.3.0",
+		"gsap": "^3.13.0",
+		"openai": "^6.3.0"
 	}
 }

@@ -4,13 +4,11 @@
   import ProjectView from "$lib/components/ProjectView.svelte";
 
   onMount(() => {});
-
   let apps = $state([]);
 
   let curApp = $state(null);
 
   function setCurApp(_idx) {
-    console.log(_idx);
     curApp = _idx;
   }
 </script>

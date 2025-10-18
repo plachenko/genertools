@@ -1,7 +1,10 @@
 <script>
+  import { slide } from "svelte/transition";
+
   import ProjectGrid from "./Grid.svelte";
   import ProjectQuickBar from "./QuickBar.svelte";
 
+  let showbar = $state(true);
   let projects = $state([]);
   let mode = $state(null);
   let selectedProject = $state(null);
@@ -54,16 +57,28 @@
 </script>
 
 <div class="relative w-full h-full bg-red-300 text-white">
-  <ProjectGrid {projects} onAdd={handleAdd} onEdit={handleEdit} />
-
-  {#if mode}
-    <ProjectQuickBar
-      {mode}
-      project={selectedProject}
-      onSubmit={handleSubmit}
-      onCancel={closePanel}
-      onDelete={handleDelete}
-      onDeleteAll={handleDeleteAll}
-    />
+  <ProjectGrid
+    {projects}
+    onAdd={handleAdd}
+    onEdit={handleEdit}
+    onCancel={closePanel}
+  />
+  {#if showbar}
+    {#if mode}
+      <div
+        class="z-[9999] bottom-0 absolute w-full"
+        transition:slide={{ y: 70, duration: 300 }}
+      >
+        huh
+        <ProjectQuickBar
+          {mode}
+          project={selectedProject}
+          onSubmit={handleSubmit}
+          onCancel={closePanel}
+          onDelete={handleDelete}
+          onDeleteAll={handleDeleteAll}
+        />
+      </div>
+    {/if}
   {/if}
 </div>

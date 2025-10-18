@@ -6,7 +6,7 @@
 </script>
 
 <!-- Quickbar container: slide-in animation only -->
-<div class="fixed bottom-0 left-0 w-full z-50 animate-slide-in">
+<div class="relative w-full z-50 select-none">
   <ProjectForm {mode} {project} {onSubmit} {onCancel} {onDelete} />
 
   <!-- Manage area with Remove All -->

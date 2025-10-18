@@ -4,6 +4,17 @@
   let description = $state(project?.description ?? "");
   let txtColor = $state(project?.txtColor ?? "#FFFFFF"); // default blue
   let color = $state(project?.color ?? "#3b82f6"); // default blue
+  let pin = $state(project?.pin ?? false);
+
+  $effect(() => {
+    if (project) {
+      name = project?.name;
+      description = project?.description;
+      txtColor = project?.txtColor;
+      color = project?.color;
+      pin = project?.pin;
+    }
+  });
 
   function handleSubmit() {
     onSubmit?.({
@@ -12,6 +23,7 @@
       description,
       txtColor,
       color,
+      pin,
       updatedAt: new Date().toISOString(),
     });
   }
@@ -25,6 +37,14 @@
   </h2>
 
   <form on:submit|preventDefault={handleSubmit} class="space-y-3">
+    <div>
+      <label class="text-sm text-neutral-400">Pin Project</label>
+      <input
+        bind:checked={pin}
+        type="checkbox"
+        class="w-full bg-neutral-800 border border-neutral-700 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-blue-500"
+      />
+    </div>
     <div>
       <label class="text-sm text-neutral-400">Name</label>
       <input

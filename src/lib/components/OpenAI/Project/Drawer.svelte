@@ -8,6 +8,7 @@
   let projects = $state([]);
   let mode = $state(null);
   let selectedProject = $state(null);
+  let activeButton = $state(null); // New: Tracks selected button
 
   // Load/save
   $effect(() => {
@@ -25,8 +26,9 @@
 
   function handleEdit(project) {
     if (project.name === "+") return handleAdd();
-    mode = "edit";
+    // mode = "edit";
     selectedProject = project;
+    // activeButton = "edit";
   }
 
   function handleSubmit(project) {
@@ -53,8 +55,20 @@
   function closePanel() {
     mode = null;
     selectedProject = null;
+    activeButton = null; // Reset active button
+  }
+
+  function handleBarClick(button) {
+    activeButton = button;
+
+    if (button === "edit") {
+      mode = "edit";
+    } else {
+      mode = null;
+    }
   }
 </script>
+
 
 <div class="relative w-full h-full bg-red-300 text-white">
   <ProjectGrid
@@ -63,22 +77,35 @@
     onEdit={handleEdit}
     onCancel={closePanel}
   />
-  {#if showbar}
-    {#if mode}
-      <div
-        class="z-[9999] bottom-0 absolute w-full"
-        transition:slide={{ y: 70, duration: 300 }}
+  {#if showbar && selectedProject}
+  <div class="absolute bottom-0 left-0 w-full bg-black/30 p-2 flex justify-center gap-4 z-40">
+    {#each ["open", "edit", "delete"] as button}
+      <button
+        class="px-4 py-2 rounded-md text-sm font-semibold transition-all duration-150
+                hover:bg-white hover:text-black
+                {activeButton === button ? 'bg-white text-black' : 'bg-black text-white'}"
+        on:click={() => handleBarClick(button)}
       >
-        huh
-        <ProjectQuickBar
-          {mode}
-          project={selectedProject}
-          onSubmit={handleSubmit}
-          onCancel={closePanel}
-          onDelete={handleDelete}
-          onDeleteAll={handleDeleteAll}
-        />
-      </div>
-    {/if}
-  {/if}
+        {button.charAt(0).toUpperCase() + button.slice(1)}
+      </button>
+    {/each}
+  </div>
+{/if}
+
+   {#if showbar && activeButton === "edit" && mode === "edit"}
+  <div
+    class="z-[9999] bottom-12 absolute w-full"
+    transition:slide={{ y: 70, duration: 300 }}
+  >
+    <ProjectQuickBar
+      {mode}
+      project={selectedProject}
+      onSubmit={handleSubmit}
+      onCancel={closePanel}
+      onDelete={handleDelete}
+      onDeleteAll={handleDeleteAll}
+    />
+  </div>
+{/if}
+
 </div>

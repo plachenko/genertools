@@ -1,4 +1,6 @@
 <script>
+  import { slide } from "svelte/transition";
+
   import ProjectButton from "./Button.svelte";
 
   let { projects = [], onAdd, onCancel, onEdit } = $props();
@@ -8,8 +10,10 @@
   let containerWidth = $state(0);
   let selectedIdx = $state(null);
 
-  let sortType = $state(0); // 0: alphabetical, 1: timesOpened, 2: date created
+  let sortType = $state(2); // 0: alphabetical, 1: timesOpened, 2: date created
   let sortReversed = $state(false);
+
+  let showFilter = $state(false);
 
   function selectProj(idx) {
     if (selectedIdx == idx) {
@@ -22,49 +26,49 @@
     onEdit(projects[idx]);
   }
 
-/**
- * Sorts an array of objects by a chosen criterion.
- *
- * @param {Array} items - The array to sort.
- * @param {number} sortType - The sort mode:
- *   0 → alphabetical (default)
- *   1 → timesOpened (descending)
- *   2 → date created (ascending)
- * @param {boolean} reversed - Whether to reverse the result.
- */
-function sortItems(items, sortType = 0, reversed = false) {
-  const sorted = [...items].sort((a, b) => {
-    switch (sortType) {
-      // 0 → alphabetical (case-insensitive)
-      case 0: {
-        const nameA = (a.name || '').toLowerCase();
-        const nameB = (b.name || '').toLowerCase();
-        if (nameA < nameB) return -1;
-        if (nameA > nameB) return 1;
-        return 0;
+  /**
+   * Sorts an array of objects by a chosen criterion.
+   *
+   * @param {Array} items - The array to sort.
+   * @param {number} sortType - The sort mode:
+   *   0 → alphabetical (default)
+   *   1 → timesOpened (descending)
+   *   2 → date created (ascending)
+   * @param {boolean} reversed - Whether to reverse the result.
+   */
+  function sortItems(items, sortType = 0, reversed = false) {
+    const sorted = [...items].sort((a, b) => {
+      switch (sortType) {
+        // 0 → alphabetical (case-insensitive)
+        case 0: {
+          const nameA = (a.name || "").toLowerCase();
+          const nameB = (b.name || "").toLowerCase();
+          if (nameA < nameB) return -1;
+          if (nameA > nameB) return 1;
+          return 0;
+        }
+
+        // 1 → timesOpened (descending)
+        case 1: {
+          const openA = a.timesOpened ?? 0;
+          const openB = b.timesOpened ?? 0;
+          return openB - openA;
+        }
+
+        // 2 → created date (ascending)
+        case 2: {
+          const dateA = new Date(a.created || 0);
+          const dateB = new Date(b.created || 0);
+          return dateA - dateB;
+        }
+
+        default:
+          return items;
       }
+    });
 
-      // 1 → timesOpened (descending)
-      case 1: {
-        const openA = a.timesOpened ?? 0;
-        const openB = b.timesOpened ?? 0;
-        return openB - openA;
-      }
-
-      // 2 → created date (ascending)
-      case 2: {
-        const dateA = new Date(a.created || 0);
-        const dateB = new Date(b.created || 0);
-        return dateA - dateB;
-      }
-
-      default:
-        return items;
-    }
-  });
-
-  return reversed ? sorted.reverse() : sorted;
-}
+    return reversed ? sorted.reverse() : sorted;
+  }
 
   // Dynamically adjust group size based on container width
   function updateGroupSize(width) {
@@ -79,7 +83,6 @@ function sortItems(items, sortType = 0, reversed = false) {
   $effect(() => {
     if (!container) return;
     if (projects) {
-      console.log(projects.filter((e) => e.pin));
     }
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
@@ -110,21 +113,33 @@ function sortItems(items, sortType = 0, reversed = false) {
   bind:this={container}
   class="relative w-full h-full overflow-hidden bg-neutral-900"
 >
-<div class="p-3 border rounded-md max-w-md">
-	<div class="mb-2">
-		<label class="block text-sm font-medium mb-1">Sort type</label>
-		<select bind:value={sortType} class="w-full p-2 border rounded">
-			<option value="0">Alphabetical (A → Z)</option>
-			<option value="1">Times opened (most → least)</option>
-			<option value="2">Date created (oldest → newest)</option>
-		</select>
-	</div>
+  <button
+    class="bg-slate-400 p-2 rounded-md"
+    onclick={() => {
+      showFilter = !showFilter;
+    }}>Filter</button
+  >
+  {#if showFilter}
+    <div
+      transition:slide={{ y: 100, duration: 500 }}
+      class="bg-red-400 p-3 border rounded-md max-w-md"
+    >
+      <div class="mb-2">
+        <label class="block text-sm font-medium mb-1">Sort type</label>
+        <select bind:value={sortType} class="w-full p-2 border rounded">
+          <option value="0">Alphabetical</option>
+          <option value="1">Times opened</option>
+          <option value="2">Date created</option>
+        </select>
+      </div>
 
-	<div class="mb-4 flex items-center gap-2">
-		<input id="reversed" type="checkbox" bind:checked={sortReversed} />
-		<label for="reversed" class="text-sm">Reverse final order</label>
-	</div>
-</div>
+      <div class="mb-4 flex items-center gap-2">
+        <input id="reversed" type="checkbox" bind:checked={sortReversed} />
+        <label for="reversed" class="text-sm">Reverse final order</label>
+      </div>
+    </div>
+  {/if}
+
   <!-- Scrollable project grid -->
   <div class="absolute inset-0 flex flex-col overflow-y-auto p-4 space-y-4">
     <div class="bg-neutral-800 rounded-md flex-1 relative overflow-y-scroll">

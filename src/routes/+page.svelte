@@ -11,6 +11,7 @@
   let sortOptions = $state(["Alphabetical", "Date Created", "Times Opened"]);
 
   let projSelected = $state(null);
+  let projects = $state([]);
 
   let curApp = $state(null);
   let curPage = $state(0);
@@ -23,7 +24,7 @@
   let projNum = $state(80);
   let pageNum = $state(4);
   let maxProjNumX = $state(3);
-  let maxProjNumY = $state(4);
+  let maxProjNumY = $state(5);
 
   function setCurPage(pageOffset) {
     console.log(curPage, pageNum);
@@ -44,8 +45,10 @@
     // let gridH = appContainer.parentNode.offsetHeight * curPage;
     // let gridW = appContainer.parentNode.offsetWidth;
 
-    let gridH = maxProjNumY * bSize + (8 + maxProjNumY) * maxProjNumY;
-    gridH = gridH * curPage + 18;
+    let gridH = maxProjNumY * bSize;
+    gridH = gridH * curPage;
+    // gridH = gridH + curPage * 2;
+    gridH = gridH + 16 * curPage;
     let gridW = maxProjNumX * bSize + (8 + maxProjNumX) * maxProjNumX;
 
     appContainer.scrollTo({ top: gridH, behavior: "smooth" });
@@ -89,14 +92,11 @@
   onMount(() => {
     // let gridH = appContainer.parentNode.offsetHeight - 100;
     //let gridW = appContainer.parentNode.offsetWidth - 100;
-    let gridH = maxProjNumY * bSize + (8 + maxProjNumY) * maxProjNumY;
-    let gridW = maxProjNumX * bSize + (8 + maxProjNumX) * maxProjNumX;
-
-    appContainer.style.width = `${gridW}px`;
-    appContainer.style.height = `${gridH}px`;
 
     let py = null;
     let px = null;
+
+    setGridSize();
 
     appContainer.addEventListener("pointerdown", (e) => {
       e.preventDefault();
@@ -106,13 +106,22 @@
       px = e.clientX;
     });
 
+    /*
+    appContainer.addEventListener("pointermove", (e) => {
+      appContainer.scrollTo({ top: py - e.clientY });
+    });
+    */
+
     appContainer.addEventListener("pointerup", (e) => {
       e.preventDefault();
       if (projSelected) return;
 
+      /*
       console.log(
         magnitudeAndDirection({ x: px, y: py }, { x: e.clientX, y: e.clientY }),
       );
+      */
+
       if (e.clientY < py) {
         setCurPage(1);
         console.log("swipe up");
@@ -125,6 +134,7 @@
     });
 
     window.addEventListener("resize", (e) => {
+      setGridSize();
       console.log(e.offset);
     });
 
@@ -132,6 +142,18 @@
 
     setPaging();
   });
+
+  function setGridSize() {
+    // maxProjNumX = ~~(appContainer.parentNode.clientWidth / bSize);
+    maxProjNumX = ~~((appContainer.parentNode.offsetWidth - 40) / bSize);
+    maxProjNumY = ~~((appContainer.parentNode.offsetHeight - 40) / bSize);
+
+    let gridH = maxProjNumY * bSize + maxProjNumY * maxProjNumY;
+    let gridW = maxProjNumX * bSize + (8 + maxProjNumX) * maxProjNumX;
+
+    appContainer.style.width = `${gridW}px`;
+    // appContainer.style.height = `${gridH}px`;
+  }
 
   function setCurApp(_idx) {
     curApp = _idx;
@@ -181,12 +203,13 @@
               {#each Array(projNum) as app, idx}
                 <button
                   transition:slide
-                  onclick={() => {
+                  onclick={(e) => {
+                    e.preventDefault();
                     if (projSelected == idx) {
                       projSelected = null;
                       return;
                     }
-                    projSelected = idx;
+                    // projSelected = idx;
                   }}
                   class={`${projSelected == idx ? "border-4 border-neutral-400" : ""} cursor-pointer bg-slate-100 size-[${bSize}px] rounded-md`}
                   >{idx}</button
@@ -195,45 +218,51 @@
             </div>
           </div>
 
-          <div class="w-full bottom-0 absolute flex-1 flex justify-center">
-            <div
-              class="bg-blue-400 flex p-1 rounded-md justify-center gap-2 absolute bottom-[8px]"
-            >
-              <button
-                onclick={() => {
-                  setCurPage(-1);
-                }}
-                class="h-[20px] w-[30px] rounded-full bottom-[-1px] absolute left-[-40px] bg-blue-400 flex justify-center items-center text-white"
-                >-</button
+          {#if !projSelected}
+            <div class="w-full bottom-0 absolute flex-1 flex justify-center">
+              <div
+                class="bg-blue-400 flex p-1 rounded-md justify-center gap-2 absolute bottom-[8px]"
               >
-              {#each Array(pageNum) as dot, idx}
-                <div
-                  class={`${idx == curPage ? "border-2 border-white" : ""} bg-red-400 rounded-full size-[10px]`}
-                ></div>
-              {/each}
-              <button
-                onclick={() => {
-                  setCurPage(1);
-                }}
-                class="h-[20px] w-[30px] rounded-full bottom-[-1px] absolute right-[-40px] bg-blue-400 flex justify-center items-center text-white"
-                >+</button
-              >
+                <button
+                  onclick={() => {
+                    setCurPage(-1);
+                  }}
+                  class="cursor-pointer h-[20px] w-[30px] rounded-full bottom-[-1px] absolute left-[-40px] bg-blue-400 flex justify-center items-center text-white"
+                  >-</button
+                >
+                {#each Array(pageNum) as dot, idx}
+                  <button
+                    onclick={() => {
+                      curPage = idx;
+                      scrollPage();
+                    }}
+                    class={`cursor-pointer ${idx == curPage ? "border-2 border-white" : ""} bg-red-400 rounded-full size-[10px]`}
+                  ></button>
+                {/each}
+                <button
+                  onclick={() => {
+                    setCurPage(1);
+                  }}
+                  class="cursor-pointer h-[20px] w-[30px] rounded-full bottom-[-1px] absolute right-[-40px] bg-blue-400 flex justify-center items-center text-white"
+                  >+</button
+                >
+              </div>
             </div>
-          </div>
+          {/if}
         </div>
       </div>
 
       <div class="flex bg-blue-400 p-2">
         <div class="bg-red-400 rounded-md flex items-center h-[80px] w-full">
           <div class=" p-2 border-r-2 shrink border-dashed">
-            <button class={`bg-slate-300 rounded-md size-[${bSize}px]`}
-              >+</button
-            >
+            <button class={`bg-slate-300 rounded-md size-[60px]`}>+</button>
           </div>
           <div class="flex flex-1 gap-2 justify-between p-2">
-            {#each Array(3) as pin, idx}
+            {#each projects.filter((e) => {
+              return e.pinned;
+            }) as pin, idx}
               <button
-                class={`select-none w-full bg-slate-300 rounded-md size-[${bSize}px]`}
+                class={`select-none w-full bg-slate-300 rounded-md size-[60px]`}
                 >{idx}</button
               >
             {/each}

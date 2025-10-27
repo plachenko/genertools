@@ -17,14 +17,16 @@
   let curPage = $state(0);
 
   let appContainer = $state(null);
+  let swipeType = $state(0);
 
   let bSize = $state(60);
 
+  let gapSize = $state(15);
   let scrollLocked = $state(true);
   let projNum = $state(80);
   let pageNum = $state(4);
-  let maxProjNumX = $state(3);
-  let maxProjNumY = $state(5);
+  let maxProjNumX = $state(5);
+  let maxProjNumY = $state(3);
 
   function setCurPage(pageOffset) {
     console.log(curPage, pageNum);
@@ -41,15 +43,35 @@
     scrollPage();
   }
 
+  function angleBetweenPoints(x1, y1, x2, y2, unit = "deg") {
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    let angle = Math.atan2(dy, dx); // radians between -π and π
+
+    if (unit === "deg") {
+      angle = angle * (180 / Math.PI);
+    }
+
+    return angle;
+  }
+
+  function orientation(x1, y1, x2, y2) {
+    const dx = Math.abs(x2 - x1);
+    const dy = Math.abs(y2 - y1);
+
+    if (dx === dy) return "diagonal";
+    return dx < dy ? 0 : 1;
+  }
+
   function scrollPage() {
     // let gridH = appContainer.parentNode.offsetHeight * curPage;
-    // let gridW = appContainer.parentNode.offsetWidth;
+    let gridW = appContainer.parentNode.offsetWidth;
 
     let gridH = maxProjNumY * bSize;
     gridH = gridH * curPage;
     // gridH = gridH + curPage * 2;
-    gridH = gridH + 16 * curPage;
-    let gridW = maxProjNumX * bSize + (8 + maxProjNumX) * maxProjNumX;
+    gridH = gridH + curPage;
+    //let gridW = maxProjNumX * bSize + (8 + maxProjNumX) * maxProjNumX;
 
     appContainer.scrollTo({ top: gridH, behavior: "smooth" });
   }
@@ -64,30 +86,6 @@
   $effect(() => {
     console.log(appContainer?.parentNode.offsetHeight);
   });
-
-  function magnitudeAndDirection(point1, point2) {
-    const dx = point2.x - point1.x;
-    const dy = point2.y - point1.y;
-    const magnitude = Math.sqrt(dx * dx + dy * dy);
-
-    const epsilon = 1e-10; // Small range for floating-point comparison
-    let direction;
-
-    console.log(Math.abs(dy) < epsilon);
-
-    if (Math.abs(dy) < epsilon) {
-      direction = "horizontal";
-    } else if (Math.abs(dx) < epsilon) {
-      direction = "vertical";
-    } else {
-      direction = "neither";
-    }
-
-    return {
-      magnitude: magnitude,
-      direction: direction,
-    };
-  }
 
   onMount(() => {
     // let gridH = appContainer.parentNode.offsetHeight - 100;
@@ -116,11 +114,7 @@
       e.preventDefault();
       if (projSelected) return;
 
-      /*
-      console.log(
-        magnitudeAndDirection({ x: px, y: py }, { x: e.clientX, y: e.clientY }),
-      );
-      */
+      if (orientation(e.clientX, e.clientY, px, py) !== swipeType) return;
 
       if (e.clientY < py) {
         setCurPage(1);
@@ -145,14 +139,14 @@
 
   function setGridSize() {
     // maxProjNumX = ~~(appContainer.parentNode.clientWidth / bSize);
-    maxProjNumX = ~~((appContainer.parentNode.offsetWidth - 40) / bSize);
-    maxProjNumY = ~~((appContainer.parentNode.offsetHeight - 40) / bSize);
+    maxProjNumX = ~~(appContainer.parentNode.offsetWidth / bSize);
+    maxProjNumY = ~~(appContainer.parentNode.offsetHeight / bSize);
 
-    let gridH = maxProjNumY * bSize + maxProjNumY * maxProjNumY;
-    let gridW = maxProjNumX * bSize + (8 + maxProjNumX) * maxProjNumX;
+    let gridH = maxProjNumY * bSize;
+    let gridW = maxProjNumX * bSize;
 
     appContainer.style.width = `${gridW}px`;
-    // appContainer.style.height = `${gridH}px`;
+    appContainer.style.height = `${gridH}px`;
   }
 
   function setCurApp(_idx) {
@@ -198,7 +192,7 @@
           >
             <div
               bind:this={appContainer}
-              class={`overflow-hidden bg-green-300 absolute grid grid-cols-[repeat(auto-fill,minmax(${bSize}px,1fr))] gap-4 rounded-md h-[130px]`}
+              class={`overflow-hidden bg-green-300 absolute grid grid-cols-[repeat(auto-fill,minmax(${bSize}px,1fr))] gap-[${gapSize}px] rounded-md h-[130px]`}
             >
               {#each Array(projNum) as app, idx}
                 <button
@@ -219,9 +213,11 @@
           </div>
 
           {#if !projSelected}
-            <div class="w-full bottom-0 absolute flex-1 flex justify-center">
+            <div
+              class="w-full top-0 bg-red-300 absolute flex-1 flex justify-center items-center"
+            >
               <div
-                class="bg-blue-400 flex p-1 rounded-md justify-center gap-2 absolute bottom-[8px]"
+                class={`${swipeType ? "" : "left-[0px] rotate-[90deg]"} bg-blue-400 flex p-1 rounded-md justify-center gap-2 absolute `}
               >
                 <button
                   onclick={() => {

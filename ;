@@ -40,13 +40,7 @@
   $effect(() => {
     let projTot = maxProjNumX * maxProjNumY;
     pageNum = ~~(projects.length / projTot);
-    // console.log(projects.length, pageNum, projTot);
-
-    if (measureCont) {
-      sepWidth = measureCont.innerWidth / 10;
-      sepHeight = measureCont.innerHeight / 10;
-    }
-
+    console.log(projects.length, pageNum, projTot);
     if (bCont) {
       maxProjNumX = Math.round(bCont.clientWidth / bSize);
     }
@@ -118,6 +112,9 @@
 
     let py = null;
     let px = null;
+
+    sepWidth = window.innerWidth / 10;
+    sepHeight = window.innerWidth / 10;
 
     // setGridSize();
 
@@ -239,36 +236,23 @@
       >
         <div class="border-t-2 w-full absolute">
           <div
-            class="flex flex-col justify-center relative align-center h-0 bg-blue-300"
+            class="flex flex-col justify-center relative align-center h-10 bg-blue-300"
           >
-            {#each Array(~~sepWidth) as sep, idx}
+            {#each Array(sepWidth) as sep, idx}
               <div
-                style={`left: ${idx * sepWidth}px; width: ${10}px`}
+                style={`left: ${idx * 17}px; width: ${10}`}
                 class={`absolute bg-red-300  h-2 border-l-2 top-0 opacity-30`}
-              >
-                {idx}
-              </div>
+              ></div>
             {/each}
             <div class="border-l-2 size-10"></div>
-            <span class="top-[-25px] absolute"
-              >{measureCont?.clientWidth}px</span
-            >
+            <span class="">{measureCont?.clientWidth}px</span>
           </div>
         </div>
         <div class="border-r-2 h-full absolute">
           <div
-            class="flex bg-green-300 flex-row justify-center relative align-center w-0 h-full opacity-30"
+            class="flex bg-green-300 flex-row justify-center relative align-center w-15 h-full opacity-30"
           >
-            {#each Array(~~sepHeight) as sep, idx}
-              <div
-                style={`top: ${idx * sepWidth}px; height: ${10}px`}
-                class={`absolute bg-red-300  w-2 border-t-2 right-0 opacity-30`}
-              >
-                {idx}
-              </div>
-            {/each}
-
-            <span class="rotate-[90deg]">{measureCont?.clientHeight}px</span>
+            <span class="">{measureCont?.clientHeight}px</span>
             <div class="border-t-2 size-10"></div>
           </div>
         </div>
